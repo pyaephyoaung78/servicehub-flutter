@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_laravel_testing/features/admin/bookings/screens/admin_booking_list_screen.dart';
 import 'package:flutter_laravel_testing/features/bookings/screens/my_bookings_screen.dart';
+import 'package:flutter_laravel_testing/features/staff/assignments/screens/staff_assignment_list_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../auth/providers/auth_provider.dart';
@@ -58,6 +59,26 @@ class HomeScreen extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const AdminBookingListScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+
+          if (user?.role == 'staff') ...[
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.work_outline),
+                title: const Text('My assignments'),
+                subtitle: const Text(
+                  'Review assigned jobs and update progress.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const StaffAssignmentListScreen(),
                     ),
                   );
                 },
