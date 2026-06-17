@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_laravel_testing/features/admin/bookings/screens/admin_booking_list_screen.dart';
 import 'package:flutter_laravel_testing/features/bookings/screens/my_bookings_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -45,6 +46,24 @@ class HomeScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 30),
+
+          if (user?.role == 'admin') ...[
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.assignment_outlined),
+                title: const Text('Manage bookings'),
+                subtitle: const Text('View pending requests and assign staff.'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AdminBookingListScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
 
           if (user?.role == 'customer') ...[
             Card(
