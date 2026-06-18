@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_laravel_testing/features/admin/bookings/screens/admin_booking_list_screen.dart';
 import 'package:flutter_laravel_testing/features/bookings/screens/my_bookings_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/assignments/screens/staff_assignment_list_screen.dart';
+import 'package:flutter_laravel_testing/features/staff/profile/screens/staff_profile_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../auth/providers/auth_provider.dart';
@@ -79,6 +80,24 @@ class HomeScreen extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const StaffAssignmentListScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: const Text('Staff profile'),
+                subtitle: const Text(
+                  'View your skills and control availability.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const StaffProfileScreen(),
                     ),
                   );
                 },
