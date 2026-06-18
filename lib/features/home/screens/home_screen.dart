@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_laravel_testing/features/admin/bookings/screens/admin_booking_list_screen.dart';
+import 'package:flutter_laravel_testing/features/admin/staff/screens/admin_staff_list_screen.dart';
 import 'package:flutter_laravel_testing/features/bookings/screens/my_bookings_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/assignments/screens/staff_assignment_list_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/profile/screens/staff_profile_screen.dart';
@@ -54,12 +55,30 @@ class HomeScreen extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.assignment_outlined),
                 title: const Text('Manage bookings'),
-                subtitle: const Text('View pending requests and assign staff.'),
+                subtitle: const Text('View booking requests and assign staff.'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const AdminBookingListScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.groups_outlined),
+                title: const Text('Manage staff'),
+                subtitle: const Text(
+                  'Create staff, assign skills and manage availability.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AdminStaffListScreen(),
                     ),
                   );
                 },
