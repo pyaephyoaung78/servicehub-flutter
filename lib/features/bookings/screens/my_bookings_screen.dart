@@ -10,12 +10,10 @@ class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
 
   @override
-  State<MyBookingsScreen> createState() =>
-      _MyBookingsScreenState();
+  State<MyBookingsScreen> createState() => _MyBookingsScreenState();
 }
 
-class _MyBookingsScreenState
-    extends State<MyBookingsScreen> {
+class _MyBookingsScreenState extends State<MyBookingsScreen> {
   late final BookingApiService bookingApiService;
 
   bool isLoading = true;
@@ -27,13 +25,9 @@ class _MyBookingsScreenState
     super.initState();
 
     final tokenStorage = TokenStorage();
-    final apiClient = ApiClient(
-      tokenStorage: tokenStorage,
-    );
+    final apiClient = ApiClient(tokenStorage: tokenStorage);
 
-    bookingApiService = BookingApiService(
-      apiClient: apiClient,
-    );
+    bookingApiService = BookingApiService(apiClient: apiClient);
 
     _loadBookings();
   }
@@ -45,8 +39,7 @@ class _MyBookingsScreenState
     });
 
     try {
-      final results =
-          await bookingApiService.getBookings();
+      final results = await bookingApiService.getBookings();
 
       if (!mounted) {
         return;
@@ -61,8 +54,7 @@ class _MyBookingsScreenState
       }
 
       setState(() {
-        errorMessage =
-            'Failed to load bookings: $error';
+        errorMessage = 'Failed to load bookings: $error';
       });
     } finally {
       if (mounted) {
@@ -75,8 +67,7 @@ class _MyBookingsScreenState
 
   String _formatDateTime(DateTime dateTime) {
     final hour = dateTime.hour.toString().padLeft(2, '0');
-    final minute =
-        dateTime.minute.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
 
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} '
         '$hour:$minute';
@@ -85,17 +76,13 @@ class _MyBookingsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Bookings'),
-      ),
+      appBar: AppBar(title: const Text('My Bookings')),
       body: RefreshIndicator(
         onRefresh: _loadBookings,
         child: Builder(
           builder: (context) {
             if (isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (errorMessage != null) {
@@ -106,10 +93,7 @@ class _MyBookingsScreenState
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        Text(
-                          errorMessage!,
-                          textAlign: TextAlign.center,
-                        ),
+                        Text(errorMessage!, textAlign: TextAlign.center),
                         const SizedBox(height: 12),
                         OutlinedButton(
                           onPressed: _loadBookings,
@@ -126,11 +110,7 @@ class _MyBookingsScreenState
               return ListView(
                 children: const [
                   SizedBox(height: 180),
-                  Center(
-                    child: Text(
-                      'You have no bookings yet.',
-                    ),
-                  ),
+                  Center(child: Text('You have no bookings yet.')),
                 ],
               );
             }
@@ -142,42 +122,33 @@ class _MyBookingsScreenState
                 final booking = bookings[index];
 
                 return Card(
-                  margin: const EdgeInsets.only(
-                    bottom: 12,
-                  ),
+                  margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
-                    title: Text(
-                      booking.serviceName,
-                    ),
+                    title: Text(booking.serviceName),
                     subtitle: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 6),
-                        Text(
-                          _formatDateTime(
-                            booking.scheduledAt,
-                          ),
-                        ),
+                        Text(_formatDateTime(booking.scheduledAt)),
                         const SizedBox(height: 4),
-                        Text(
-                          '${booking.servicePrice.toStringAsFixed(0)} MMK',
-                        ),
+                        Text('${booking.servicePrice.toStringAsFixed(0)} MMK'),
                       ],
                     ),
-                    trailing: _StatusChip(
-                      status: booking.status,
-                    ),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
+                    trailing: _StatusChip(status: booking.status),
+
+                    onTap: () async {
+                      final changed = await Navigator.of(context).push<bool>(
+                        MaterialPageRoute(
                           builder: (_) =>
-                              BookingDetailScreen(
-                            bookingId: booking.id,
-                          ),
+                              BookingDetailScreen(bookingId: booking.id),
                         ),
                       );
+
+                      if (changed == true) {
+                        await _loadBookings();
+                      }
                     },
+                    
                   ),
                 );
               },
@@ -192,18 +163,10 @@ class _MyBookingsScreenState
 class _StatusChip extends StatelessWidget {
   final String status;
 
-  const _StatusChip({
-    required this.status,
-  });
+  const _StatusChip({required this.status});
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      label: Text(
-        status
-            .replaceAll('_', ' ')
-            .toUpperCase(),
-      ),
-    );
+    return Chip(label: Text(status.replaceAll('_', ' ').toUpperCase()));
   }
 }

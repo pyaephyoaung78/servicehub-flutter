@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_laravel_testing/features/admin/bookings/screens/admin_booking_list_screen.dart';
+import 'package:flutter_laravel_testing/features/admin/catalog/screens/admin_catalog_screen.dart';
 import 'package:flutter_laravel_testing/features/admin/staff/screens/admin_staff_list_screen.dart';
 import 'package:flutter_laravel_testing/features/bookings/screens/my_bookings_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/assignments/screens/staff_assignment_list_screen.dart';
@@ -79,6 +80,24 @@ class HomeScreen extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const AdminStaffListScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.category_outlined),
+                title: const Text('Manage catalog'),
+                subtitle: const Text(
+                  'Manage service categories, prices and durations.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AdminCatalogScreen(),
                     ),
                   );
                 },
