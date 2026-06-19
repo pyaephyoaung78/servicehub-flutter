@@ -23,6 +23,8 @@ class AdminBookingModel {
   final String? rejectedByName;
   final DateTime? rejectedAt;
 
+  final BookingInvoiceSummaryModel? invoice;
+
   final AssignmentSummaryModel? latestAssignment;
 
   const AdminBookingModel({
@@ -45,6 +47,7 @@ class AdminBookingModel {
     required this.rejectionReason,
     required this.rejectedByName,
     required this.rejectedAt,
+    required this.invoice,
   });
 
   factory AdminBookingModel.fromJson(Map<String, dynamic> json) {
@@ -59,6 +62,8 @@ class AdminBookingModel {
     final cancelledBy = closure['cancelled_by'] as Map<String, dynamic>?;
 
     final rejectedBy = closure['rejected_by'] as Map<String, dynamic>?;
+
+    final invoiceJson = json['invoice'] as Map<String, dynamic>?;
 
     return AdminBookingModel(
       id: json['id'] as int,
@@ -97,6 +102,10 @@ class AdminBookingModel {
       rejectedAt: closure['rejected_at'] != null
           ? DateTime.parse(closure['rejected_at'].toString()).toLocal()
           : null,
+
+      invoice: invoiceJson != null
+          ? BookingInvoiceSummaryModel.fromJson(invoiceJson)
+          : null,
     );
   }
 }
@@ -126,5 +135,38 @@ class AssignmentSummaryModel {
       staffName: staff['name']?.toString() ?? 'Unknown staff',
       adminNote: json['admin_note']?.toString(),
     );
+  }
+}
+
+class BookingInvoiceSummaryModel {
+  final int id;
+  final String invoiceNo;
+  final String paymentStatus;
+  final double totalAmount;
+  final double paidAmount;
+  final double remainingAmount;
+
+  const BookingInvoiceSummaryModel({
+    required this.id,
+    required this.invoiceNo,
+    required this.paymentStatus,
+    required this.totalAmount,
+    required this.paidAmount,
+    required this.remainingAmount,
+  });
+
+  factory BookingInvoiceSummaryModel.fromJson(Map<String, dynamic> json) {
+    return BookingInvoiceSummaryModel(
+      id: json['id'] as int,
+      invoiceNo: json['invoice_no']?.toString() ?? '',
+      paymentStatus: json['payment_status']?.toString() ?? '',
+      totalAmount: _toDouble(json['total_amount']),
+      paidAmount: _toDouble(json['paid_amount']),
+      remainingAmount: _toDouble(json['remaining_amount']),
+    );
+  }
+
+  static double _toDouble(dynamic value) {
+    return double.tryParse(value.toString()) ?? 0;
   }
 }

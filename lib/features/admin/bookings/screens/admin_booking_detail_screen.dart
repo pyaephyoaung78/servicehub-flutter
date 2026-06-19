@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_laravel_testing/core/errors/api_error_handler.dart';
+import 'package:flutter_laravel_testing/features/invoices/screens/admin_invoice_detail_screen.dart';
+import 'package:flutter_laravel_testing/features/invoices/screens/create_invoice_screen.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/token_storage.dart';
@@ -199,6 +201,51 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
     }
   }
 
+  Future<void> openCreateInvoice() async {
+    final current = booking;
+
+    if (current == null) {
+      return;
+    }
+
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => CreateInvoiceScreen(
+          bookingId: current.id,
+          serviceName: current.serviceName,
+          servicePrice: current.servicePrice,
+        ),
+      ),
+    );
+
+    if (created == true && mounted) {
+      await loadBooking();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invoice created successfully.')),
+      );
+    }
+  }
+
+  Future<void> openInvoiceDetail() async {
+    final current = booking;
+
+    if (current?.invoice == null) {
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            AdminInvoiceDetailScreen(invoiceId: current!.invoice!.id),
+      ),
+    );
+
+    if (mounted) {
+      await loadBooking();
+    }
+  }
+
   String formatDateTime(DateTime dateTime) {
     final hour = dateTime.hour.toString().padLeft(2, '0');
     final minute = dateTime.minute.toString().padLeft(2, '0');
@@ -300,6 +347,40 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
                   onPressed: isSubmitting ? null : rejectBooking,
                   icon: const Icon(Icons.block_outlined),
                   label: const Text('Reject Booking'),
+                ),
+              ],
+
+              if (current.status == 'completed' && current.invoice == null) ...[
+                const SizedBox(height: 10),
+
+                FilledButton.icon(
+                  onPressed: openCreateInvoice,
+                  icon: const Icon(Icons.receipt_long),
+                  label: const Text('Create Invoice'),
+                ),
+              ],
+
+              if (current.invoice != null) ...[
+                const SizedBox(height: 10),
+
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.receipt_long),
+                    title: Text(current.invoice!.invoiceNo),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Status: ${current.invoice!.paymentStatus.toUpperCase()}',
+                        ),
+                        Text(
+                          'Remaining: ${current.invoice!.remainingAmount.toStringAsFixed(0)} MMK',
+                        ),
+                      ],
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: openInvoiceDetail,
+                  ),
                 ),
               ],
 

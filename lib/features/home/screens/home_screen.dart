@@ -3,6 +3,8 @@ import 'package:flutter_laravel_testing/features/admin/bookings/screens/admin_bo
 import 'package:flutter_laravel_testing/features/admin/catalog/screens/admin_catalog_screen.dart';
 import 'package:flutter_laravel_testing/features/admin/staff/screens/admin_staff_list_screen.dart';
 import 'package:flutter_laravel_testing/features/bookings/screens/my_bookings_screen.dart';
+import 'package:flutter_laravel_testing/features/invoices/screens/admin_invoice_list_screen.dart';
+import 'package:flutter_laravel_testing/features/invoices/screens/customer_invoice_list_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/assignments/screens/staff_assignment_list_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/profile/screens/staff_profile_screen.dart';
 import 'package:provider/provider.dart';
@@ -103,6 +105,24 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.receipt_long_outlined),
+                title: const Text('Manage invoices'),
+                subtitle: const Text(
+                  'View invoices and record customer payments.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AdminInvoiceListScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
 
           if (user?.role == 'staff') ...[
@@ -174,6 +194,22 @@ class HomeScreen extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const MyBookingsScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.receipt_long_outlined),
+                title: const Text('My invoices'),
+                subtitle: const Text('View invoice and payment history.'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const CustomerInvoiceListScreen(),
                     ),
                   );
                 },
