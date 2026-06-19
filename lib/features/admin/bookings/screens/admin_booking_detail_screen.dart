@@ -23,7 +23,6 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
   AdminBookingModel? booking;
   bool isLoading = true;
   String? errorMessage;
-  bool wasChanged = false;
   bool isSubmitting = false;
 
   @override
@@ -84,77 +83,35 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
       ),
     );
 
-    if (assigned == true) {
-      wasChanged = true;
-      await loadBooking();
+    if (assigned == true && mounted) {
+      Navigator.of(context).pop(true);
     }
   }
 
   Future<String?> showReasonDialog({
     required String title,
     required String actionText,
-  }) async {
-    final controller = TextEditingController();
-
-    final result = await showDialog<String?>(
+  }) {
+    return showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(title),
-          content: TextField(
-            controller: controller,
-            minLines: 3,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'Reason',
-              alignLabelWithHint: true,
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Back'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(controller.text.trim());
-              },
-              child: Text(actionText),
-            ),
-          ],
-        );
+      barrierDismissible: false,
+      builder: (_) {
+        return _ReasonDialog(title: title, actionText: actionText);
       },
     );
-
-    controller.dispose();
-
-    if (result == null) {
-      return null;
-    }
-
-    if (result.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Reason is required.')));
-      }
-
-      return null;
-    }
-
-    return result;
   }
 
   Future<void> cancelBooking() async {
+    if (isSubmitting) {
+      return;
+    }
+
     final reason = await showReasonDialog(
       title: 'Cancel Booking',
       actionText: 'Cancel Booking',
     );
 
-    if (reason == null) {
+    if (!mounted || reason == null) {
       return;
     }
 
@@ -172,37 +129,38 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
         return;
       }
 
-      wasChanged = true;
+      setState(() {
+        isSubmitting = false;
+      });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking cancelled successfully.')),
-      );
-
-      await loadBooking();
+      // Return true so the booking list refreshes.
+      Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(ApiErrorHandler.message(error))));
-    } finally {
-      if (mounted) {
-        setState(() {
-          isSubmitting = false;
-        });
-      }
+      setState(() {
+        isSubmitting = false;
+      });
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(ApiErrorHandler.message(error))));
     }
   }
 
   Future<void> rejectBooking() async {
+    if (isSubmitting) {
+      return;
+    }
+
     final reason = await showReasonDialog(
       title: 'Reject Booking',
       actionText: 'Reject Booking',
     );
 
-    if (reason == null) {
+    if (!mounted || reason == null) {
       return;
     }
 
@@ -220,27 +178,24 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
         return;
       }
 
-      wasChanged = true;
+      setState(() {
+        isSubmitting = false;
+      });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking rejected successfully.')),
-      );
-
-      await loadBooking();
+      // Return true so the booking list refreshes.
+      Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(ApiErrorHandler.message(error))));
-    } finally {
-      if (mounted) {
-        setState(() {
-          isSubmitting = false;
-        });
-      }
+      setState(() {
+        isSubmitting = false;
+      });
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(ApiErrorHandler.message(error))));
     }
   }
 
@@ -258,152 +213,138 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          Navigator.of(context).pop(wasChanged);
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Booking Details')),
-        body: Builder(
-          builder: (context) {
-            if (isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+    return Scaffold(
+      appBar: AppBar(title: const Text('Booking Details')),
+      body: Builder(
+        builder: (context) {
+          if (isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            if (errorMessage != null) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(errorMessage!, textAlign: TextAlign.center),
-                      const SizedBox(height: 12),
-                      OutlinedButton(
-                        onPressed: loadBooking,
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            final current = booking!;
-
-            return ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Text(
-                  current.serviceName,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-
-                Text(
-                  '${current.servicePrice.toStringAsFixed(0)} MMK',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 24),
-
-                _DetailRow(
-                  label: 'Status',
-                  value: formatStatus(current.status),
-                ),
-                _DetailRow(label: 'Customer', value: current.customerName),
-                _DetailRow(
-                  label: 'Customer email',
-                  value: current.customerEmail,
-                ),
-                _DetailRow(label: 'Phone', value: current.phone),
-                _DetailRow(
-                  label: 'Schedule',
-                  value: formatDateTime(current.scheduledAt),
-                ),
-                _DetailRow(label: 'Address', value: current.address),
-
-                if (current.customerNote != null)
-                  _DetailRow(
-                    label: 'Customer note',
-                    value: current.customerNote!,
-                  ),
-
-                if (current.latestAssignment != null) ...[
-                  _DetailRow(
-                    label: 'Assigned staff',
-                    value: current.latestAssignment!.staffName,
-                  ),
-                  _DetailRow(
-                    label: 'Assignment status',
-                    value: formatStatus(current.latestAssignment!.status),
-                  ),
-                ],
-
-                if (current.status == 'pending') ...[
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    onPressed: openAssignStaff,
-                    icon: const Icon(Icons.person_add_alt_1),
-                    label: const Text('Assign Staff'),
-                  ),
-                ],
-
-                if (current.status == 'pending') ...[
-                  const SizedBox(height: 10),
-
-                  OutlinedButton.icon(
-                    onPressed: isSubmitting ? null : rejectBooking,
-                    icon: const Icon(Icons.block_outlined),
-                    label: const Text('Reject Booking'),
-                  ),
-                ],
-
-                if ([
-                  'pending',
-                  'assigned',
-                  'accepted',
-                ].contains(current.status)) ...[
-                  const SizedBox(height: 10),
-
-                  OutlinedButton.icon(
-                    onPressed: isSubmitting ? null : cancelBooking,
-                    icon: const Icon(Icons.cancel_outlined),
-                    label: const Text('Cancel Booking'),
-                  ),
-                ],
-
-                if (current.cancellationReason != null) ...[
-                  _DetailRow(
-                    label: 'Cancellation reason',
-                    value: current.cancellationReason!,
-                  ),
-
-                  if (current.cancelledByName != null)
-                    _DetailRow(
-                      label: 'Cancelled by',
-                      value: current.cancelledByName!,
+          if (errorMessage != null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(errorMessage!, textAlign: TextAlign.center),
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: loadBooking,
+                      child: const Text('Retry'),
                     ),
-                ],
-
-                if (current.rejectionReason != null) ...[
-                  _DetailRow(
-                    label: 'Rejection reason',
-                    value: current.rejectionReason!,
-                  ),
-
-                  if (current.rejectedByName != null)
-                    _DetailRow(
-                      label: 'Rejected by',
-                      value: current.rejectedByName!,
-                    ),
-                ],
-              ],
+                  ],
+                ),
+              ),
             );
-          },
-        ),
+          }
+
+          final current = booking!;
+
+          return ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              Text(
+                current.serviceName,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+
+              Text(
+                '${current.servicePrice.toStringAsFixed(0)} MMK',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 24),
+
+              _DetailRow(label: 'Status', value: formatStatus(current.status)),
+              _DetailRow(label: 'Customer', value: current.customerName),
+              _DetailRow(label: 'Customer email', value: current.customerEmail),
+              _DetailRow(label: 'Phone', value: current.phone),
+              _DetailRow(
+                label: 'Schedule',
+                value: formatDateTime(current.scheduledAt),
+              ),
+              _DetailRow(label: 'Address', value: current.address),
+
+              if (current.customerNote != null)
+                _DetailRow(
+                  label: 'Customer note',
+                  value: current.customerNote!,
+                ),
+
+              if (current.latestAssignment != null) ...[
+                _DetailRow(
+                  label: 'Assigned staff',
+                  value: current.latestAssignment!.staffName,
+                ),
+                _DetailRow(
+                  label: 'Assignment status',
+                  value: formatStatus(current.latestAssignment!.status),
+                ),
+              ],
+
+              if (current.status == 'pending') ...[
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: openAssignStaff,
+                  icon: const Icon(Icons.person_add_alt_1),
+                  label: const Text('Assign Staff'),
+                ),
+              ],
+
+              if (current.status == 'pending') ...[
+                const SizedBox(height: 10),
+
+                OutlinedButton.icon(
+                  onPressed: isSubmitting ? null : rejectBooking,
+                  icon: const Icon(Icons.block_outlined),
+                  label: const Text('Reject Booking'),
+                ),
+              ],
+
+              if ([
+                'pending',
+                'assigned',
+                'accepted',
+              ].contains(current.status)) ...[
+                const SizedBox(height: 10),
+
+                OutlinedButton.icon(
+                  onPressed: isSubmitting ? null : cancelBooking,
+                  icon: const Icon(Icons.cancel_outlined),
+                  label: const Text('Cancel Booking'),
+                ),
+              ],
+
+              if (current.cancellationReason != null) ...[
+                _DetailRow(
+                  label: 'Cancellation reason',
+                  value: current.cancellationReason!,
+                ),
+
+                if (current.cancelledByName != null)
+                  _DetailRow(
+                    label: 'Cancelled by',
+                    value: current.cancelledByName!,
+                  ),
+              ],
+
+              if (current.rejectionReason != null) ...[
+                _DetailRow(
+                  label: 'Rejection reason',
+                  value: current.rejectionReason!,
+                ),
+
+                if (current.rejectedByName != null)
+                  _DetailRow(
+                    label: 'Rejected by',
+                    value: current.rejectedByName!,
+                  ),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -428,6 +369,77 @@ class _DetailRow extends StatelessWidget {
           const Divider(height: 20),
         ],
       ),
+    );
+  }
+}
+
+class _ReasonDialog extends StatefulWidget {
+  final String title;
+  final String actionText;
+
+  const _ReasonDialog({required this.title, required this.actionText});
+
+  @override
+  State<_ReasonDialog> createState() => _ReasonDialogState();
+}
+
+class _ReasonDialogState extends State<_ReasonDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _reasonController = TextEditingController();
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+
+    Navigator.of(context).pop(_reasonController.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _reasonController,
+          autofocus: true,
+          minLines: 3,
+          maxLines: 5,
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: (_) => _submit(),
+          decoration: const InputDecoration(
+            labelText: 'Reason',
+            alignLabelWithHint: true,
+            border: OutlineInputBorder(),
+          ),
+          validator: (value) {
+            if ((value ?? '').trim().isEmpty) {
+              return 'Reason is required.';
+            }
+
+            return null;
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            Navigator.of(context).pop();
+          },
+          child: const Text('Back'),
+        ),
+        FilledButton(onPressed: _submit, child: Text(widget.actionText)),
+      ],
     );
   }
 }

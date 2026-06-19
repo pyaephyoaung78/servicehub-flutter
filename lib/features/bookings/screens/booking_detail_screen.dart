@@ -64,44 +64,19 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Future<void> cancelBooking() async {
-    final reasonController = TextEditingController();
+    if (isSubmitting) {
+      return;
+    }
 
-    final reason = await showDialog<String?>(
+    final reason = await showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Cancel Booking'),
-          content: TextField(
-            controller: reasonController,
-            minLines: 3,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'Reason (optional)',
-              alignLabelWithHint: true,
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Back'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(reasonController.text.trim());
-              },
-              child: const Text('Cancel Booking'),
-            ),
-          ],
-        );
+      barrierDismissible: false,
+      builder: (_) {
+        return const _CustomerCancelReasonDialog();
       },
     );
 
-    reasonController.dispose();
-
-    if (reason == null || !mounted) {
+    if (!mounted || reason == null) {
       return;
     }
 
@@ -119,9 +94,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking cancelled successfully.')),
-      );
+      setState(() {
+        isSubmitting = false;
+      });
 
       Navigator.of(context).pop(true);
     } catch (error) {
@@ -129,15 +104,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         return;
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(ApiErrorHandler.message(error))));
-    } finally {
-      if (mounted) {
-        setState(() {
-          isSubmitting = false;
-        });
-      }
+      setState(() {
+        isSubmitting = false;
+      });
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(ApiErrorHandler.message(error))));
     }
   }
 
@@ -226,7 +199,6 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       : const Text('Cancel Booking'),
                 ),
               ],
-              
             ],
           );
         },
@@ -254,6 +226,64 @@ class _DetailRow extends StatelessWidget {
           const Divider(height: 20),
         ],
       ),
+    );
+  }
+}
+
+class _CustomerCancelReasonDialog extends StatefulWidget {
+  const _CustomerCancelReasonDialog();
+
+  @override
+  State<_CustomerCancelReasonDialog> createState() =>
+      _CustomerCancelReasonDialogState();
+}
+
+class _CustomerCancelReasonDialogState
+    extends State<_CustomerCancelReasonDialog> {
+  final _reasonController = TextEditingController();
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    FocusScope.of(context).unfocus();
+
+    Navigator.of(context).pop(
+      _reasonController.text.trim(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Cancel Booking'),
+      content: TextField(
+        controller: _reasonController,
+        autofocus: true,
+        minLines: 3,
+        maxLines: 5,
+        decoration: const InputDecoration(
+          labelText: 'Reason (optional)',
+          alignLabelWithHint: true,
+          border: OutlineInputBorder(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            Navigator.of(context).pop();
+          },
+          child: const Text('Back'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: const Text('Cancel Booking'),
+        ),
+      ],
     );
   }
 }

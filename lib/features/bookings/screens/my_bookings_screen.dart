@@ -148,7 +148,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         await _loadBookings();
                       }
                     },
-                    
                   ),
                 );
               },
