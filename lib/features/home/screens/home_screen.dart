@@ -5,6 +5,7 @@ import 'package:flutter_laravel_testing/features/admin/staff/screens/admin_staff
 import 'package:flutter_laravel_testing/features/bookings/screens/my_bookings_screen.dart';
 import 'package:flutter_laravel_testing/features/invoices/screens/admin_invoice_list_screen.dart';
 import 'package:flutter_laravel_testing/features/invoices/screens/customer_invoice_list_screen.dart';
+import 'package:flutter_laravel_testing/features/quotations/screens/customer_quotation_list_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/assignments/screens/staff_assignment_list_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/profile/screens/staff_profile_screen.dart';
 import 'package:provider/provider.dart';
@@ -194,6 +195,24 @@ class HomeScreen extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const MyBookingsScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.request_quote_outlined),
+                title: const Text('My quotations'),
+                subtitle: const Text(
+                  'Review and respond to service quotations.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const CustomerQuotationListScreen(),
                     ),
                   );
                 },

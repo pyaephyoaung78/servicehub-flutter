@@ -24,6 +24,7 @@ class AdminBookingModel {
   final DateTime? rejectedAt;
 
   final BookingInvoiceSummaryModel? invoice;
+  final BookingQuotationSummaryModel? quotation;
 
   final AssignmentSummaryModel? latestAssignment;
 
@@ -48,6 +49,7 @@ class AdminBookingModel {
     required this.rejectedByName,
     required this.rejectedAt,
     required this.invoice,
+    required this.quotation,
   });
 
   factory AdminBookingModel.fromJson(Map<String, dynamic> json) {
@@ -64,6 +66,7 @@ class AdminBookingModel {
     final rejectedBy = closure['rejected_by'] as Map<String, dynamic>?;
 
     final invoiceJson = json['invoice'] as Map<String, dynamic>?;
+    final quotationJson = json['quotation'] as Map<String, dynamic>?;
 
     return AdminBookingModel(
       id: json['id'] as int,
@@ -105,6 +108,37 @@ class AdminBookingModel {
 
       invoice: invoiceJson != null
           ? BookingInvoiceSummaryModel.fromJson(invoiceJson)
+          : null,
+      quotation: quotationJson != null
+          ? BookingQuotationSummaryModel.fromJson(quotationJson)
+          : null,
+    );
+  }
+}
+
+class BookingQuotationSummaryModel {
+  final int id;
+  final String quotationNo;
+  final String status;
+  final double totalAmount;
+  final DateTime? validUntil;
+
+  const BookingQuotationSummaryModel({
+    required this.id,
+    required this.quotationNo,
+    required this.status,
+    required this.totalAmount,
+    required this.validUntil,
+  });
+
+  factory BookingQuotationSummaryModel.fromJson(Map<String, dynamic> json) {
+    return BookingQuotationSummaryModel(
+      id: json['id'] as int,
+      quotationNo: json['quotation_no']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      totalAmount: BookingInvoiceSummaryModel._toDouble(json['total_amount']),
+      validUntil: json['valid_until'] != null
+          ? DateTime.parse(json['valid_until'].toString()).toLocal()
           : null,
     );
   }

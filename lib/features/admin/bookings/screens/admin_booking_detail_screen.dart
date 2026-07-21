@@ -8,6 +8,7 @@ import '../../../../core/storage/token_storage.dart';
 import '../models/admin_booking_model.dart';
 import '../services/admin_booking_api_service.dart';
 import 'assign_staff_screen.dart';
+import '../../../quotations/screens/create_quotation_screen.dart';
 
 class AdminBookingDetailScreen extends StatefulWidget {
   final int bookingId;
@@ -87,6 +88,36 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
 
     if (assigned == true && mounted) {
       Navigator.of(context).pop(true);
+    }
+  }
+
+  Future<void> openCreateQuotation() async {
+    final current = booking;
+
+    if (current == null) {
+      return;
+    }
+
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => CreateQuotationScreen(
+          bookingId: current.id,
+          serviceName: current.serviceName,
+          servicePrice: current.servicePrice,
+        ),
+      ),
+    );
+
+    if (created == true && mounted) {
+      await loadBooking();
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Quotation sent to the customer.')),
+      );
     }
   }
 
@@ -331,7 +362,33 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
                 ),
               ],
 
-              if (current.status == 'pending') ...[
+              if (current.quotation != null) ...[
+                _DetailRow(
+                  label: 'Quotation',
+                  value: current.quotation!.quotationNo,
+                ),
+                _DetailRow(
+                  label: 'Quotation status',
+                  value: formatStatus(current.quotation!.status),
+                ),
+                _DetailRow(
+                  label: 'Quoted total',
+                  value:
+                      '${current.quotation!.totalAmount.toStringAsFixed(0)} MMK',
+                ),
+              ],
+
+              if (current.status == 'pending' && current.quotation == null) ...[
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: openCreateQuotation,
+                  icon: const Icon(Icons.request_quote_outlined),
+                  label: const Text('Create Quotation'),
+                ),
+              ],
+
+              if (current.status == 'pending' &&
+                  current.quotation?.status == 'accepted') ...[
                 const SizedBox(height: 12),
                 FilledButton.icon(
                   onPressed: openAssignStaff,
@@ -339,6 +396,16 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
                   label: const Text('Assign Staff'),
                 ),
               ],
+
+              if (current.status == 'pending' &&
+                  current.quotation != null &&
+                  current.quotation!.status != 'accepted')
+                const Padding(
+                  padding: EdgeInsets.only(top: 12),
+                  child: Text(
+                    'Staff can be assigned after the customer accepts the quotation.',
+                  ),
+                ),
 
               if (current.status == 'pending') ...[
                 const SizedBox(height: 10),
