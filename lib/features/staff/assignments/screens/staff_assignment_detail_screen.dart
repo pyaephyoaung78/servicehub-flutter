@@ -4,6 +4,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../models/staff_assignment_model.dart';
 import '../services/staff_assignment_api_service.dart';
+import '../../../bookings/interactions/screens/booking_interaction_screen.dart';
 
 class StaffAssignmentDetailScreen extends StatefulWidget {
   final int assignmentId;
@@ -375,6 +376,19 @@ class _StaffAssignmentDetailScreenState
                     label: 'Your response',
                     value: current.staffResponseNote!,
                   ),
+
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => BookingInteractionScreen(
+                        bookingId: current.bookingId,
+                        isStaff: true,
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(Icons.forum_outlined),
+                  label: const Text('Chat and upload service proof'),
+                ),
 
                 const SizedBox(height: 16),
 

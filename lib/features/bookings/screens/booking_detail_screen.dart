@@ -6,6 +6,7 @@ import '../../../core/storage/token_storage.dart';
 import '../models/booking_model.dart';
 import '../models/booking_timeline_event_model.dart';
 import '../services/booking_api_service.dart';
+import '../interactions/screens/booking_interaction_screen.dart';
 
 class BookingDetailScreen extends StatefulWidget {
   final int bookingId;
@@ -172,6 +173,19 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
               if (currentBooking.customerNote != null)
                 _DetailRow(label: 'Note', value: currentBooking.customerNote!),
+
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => BookingInteractionScreen(
+                      bookingId: currentBooking.id,
+                      isStaff: false,
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.forum_outlined),
+                label: const Text('Chat and service proof'),
+              ),
 
               if (currentBooking.checkInCode != null) ...[
                 const SizedBox(height: 8),
