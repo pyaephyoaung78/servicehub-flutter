@@ -4,18 +4,13 @@ import '../models/staff_assignment_model.dart';
 class StaffAssignmentApiService {
   final ApiClient apiClient;
 
-  StaffAssignmentApiService({
-    required this.apiClient,
-  });
+  StaffAssignmentApiService({required this.apiClient});
 
-  Future<List<StaffAssignmentModel>> getAssignments({
-    String? status,
-  }) async {
+  Future<List<StaffAssignmentModel>> getAssignments({String? status}) async {
     final response = await apiClient.dio.get(
       '/staff/assignments',
       queryParameters: {
-        if (status != null && status.isNotEmpty)
-          'status': status,
+        if (status != null && status.isNotEmpty) 'status': status,
       },
     );
 
@@ -23,27 +18,20 @@ class StaffAssignmentApiService {
 
     return items
         .map(
-          (item) => StaffAssignmentModel.fromJson(
-            item as Map<String, dynamic>,
-          ),
+          (item) => StaffAssignmentModel.fromJson(item as Map<String, dynamic>),
         )
         .toList();
   }
 
-  Future<StaffAssignmentModel> getAssignment(
-    int assignmentId,
-  ) async {
+  Future<StaffAssignmentModel> getAssignment(int assignmentId) async {
     final response = await apiClient.dio.get(
       '/staff/assignments/$assignmentId',
     );
 
     final assignmentJson =
-        response.data['data']['assignment']
-            as Map<String, dynamic>;
+        response.data['data']['assignment'] as Map<String, dynamic>;
 
-    return StaffAssignmentModel.fromJson(
-      assignmentJson,
-    );
+    return StaffAssignmentModel.fromJson(assignmentJson);
   }
 
   Future<void> respond({
@@ -55,10 +43,9 @@ class StaffAssignmentApiService {
       '/staff/assignments/$assignmentId/respond',
       data: {
         'action': action,
-        'response_note':
-            responseNote?.trim().isEmpty == true
-                ? null
-                : responseNote?.trim(),
+        'response_note': responseNote?.trim().isEmpty == true
+            ? null
+            : responseNote?.trim(),
       },
     );
   }
@@ -66,12 +53,11 @@ class StaffAssignmentApiService {
   Future<void> updateWorkStatus({
     required int assignmentId,
     required String action,
+    String? checkInCode,
   }) async {
     await apiClient.dio.patch(
       '/staff/assignments/$assignmentId/work-status',
-      data: {
-        'action': action,
-      },
+      data: {'action': action, 'check_in_code': checkInCode},
     );
   }
 }

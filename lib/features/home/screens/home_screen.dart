@@ -5,6 +5,7 @@ import 'package:flutter_laravel_testing/features/admin/staff/screens/admin_staff
 import 'package:flutter_laravel_testing/features/bookings/screens/my_bookings_screen.dart';
 import 'package:flutter_laravel_testing/features/invoices/screens/admin_invoice_list_screen.dart';
 import 'package:flutter_laravel_testing/features/invoices/screens/customer_invoice_list_screen.dart';
+import 'package:flutter_laravel_testing/features/notifications/screens/notification_list_screen.dart';
 import 'package:flutter_laravel_testing/features/quotations/screens/customer_quotation_list_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/assignments/screens/staff_assignment_list_screen.dart';
 import 'package:flutter_laravel_testing/features/staff/profile/screens/staff_profile_screen.dart';
@@ -28,6 +29,20 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('ServiceHub'),
         actions: [
+          if (user?.role != 'admin')
+            IconButton(
+              tooltip: 'Booking updates',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => NotificationListScreen(
+                      opensCustomerBooking: user?.role == 'customer',
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.notifications_none),
+            ),
           IconButton(
             tooltip: 'Logout',
             onPressed: () => _logout(context),

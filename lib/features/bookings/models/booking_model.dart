@@ -1,3 +1,5 @@
+import 'booking_timeline_event_model.dart';
+
 class BookingModel {
   final int id;
   final int serviceId;
@@ -13,6 +15,10 @@ class BookingModel {
   final DateTime? cancelledAt;
   final String? rejectionReason;
   final DateTime? rejectedAt;
+  final String? checkInCode;
+  final DateTime? checkInCodeExpiresAt;
+  final DateTime? checkedInAt;
+  final List<BookingTimelineEventModel> timeline;
 
   const BookingModel({
     required this.id,
@@ -29,12 +35,18 @@ class BookingModel {
     required this.cancelledAt,
     required this.rejectionReason,
     required this.rejectedAt,
+    required this.checkInCode,
+    required this.checkInCodeExpiresAt,
+    required this.checkedInAt,
+    required this.timeline,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     final service = json['service'] as Map<String, dynamic>;
 
     final closure = json['closure'] as Map<String, dynamic>? ?? {};
+    final checkIn = json['check_in'] as Map<String, dynamic>? ?? {};
+    final timeline = json['timeline'] as List? ?? [];
 
     return BookingModel(
       id: json['id'],
@@ -61,6 +73,24 @@ class BookingModel {
       rejectedAt: closure['rejected_at'] != null
           ? DateTime.parse(closure['rejected_at'].toString()).toLocal()
           : null,
+
+      checkInCode: checkIn['code']?.toString(),
+
+      checkInCodeExpiresAt: checkIn['code_expires_at'] != null
+          ? DateTime.parse(checkIn['code_expires_at'].toString()).toLocal()
+          : null,
+
+      checkedInAt: checkIn['verified_at'] != null
+          ? DateTime.parse(checkIn['verified_at'].toString()).toLocal()
+          : null,
+
+      timeline: timeline
+          .map(
+            (item) => BookingTimelineEventModel.fromJson(
+              item as Map<String, dynamic>,
+            ),
+          )
+          .toList(),
     );
   }
 }

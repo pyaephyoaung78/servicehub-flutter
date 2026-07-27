@@ -21,6 +21,7 @@ class StaffAssignmentModel {
 
   final DateTime? assignedAt;
   final DateTime? respondedAt;
+  final DateTime? checkedInAt;
 
   const StaffAssignmentModel({
     required this.id,
@@ -39,68 +40,51 @@ class StaffAssignmentModel {
     required this.staffResponseNote,
     required this.assignedAt,
     required this.respondedAt,
+    required this.checkedInAt,
   });
 
-  factory StaffAssignmentModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final booking =
-        json['booking'] as Map<String, dynamic>? ?? {};
+  factory StaffAssignmentModel.fromJson(Map<String, dynamic> json) {
+    final booking = json['booking'] as Map<String, dynamic>? ?? {};
 
-    final customer =
-        booking['customer'] as Map<String, dynamic>? ?? {};
+    final customer = booking['customer'] as Map<String, dynamic>? ?? {};
 
-    final service =
-        booking['service'] as Map<String, dynamic>? ?? {};
+    final service = booking['service'] as Map<String, dynamic>? ?? {};
+    final checkIn = booking['check_in'] as Map<String, dynamic>? ?? {};
 
     return StaffAssignmentModel(
       id: json['id'] as int,
-      assignmentStatus:
-          json['status']?.toString() ?? '',
+      assignmentStatus: json['status']?.toString() ?? '',
 
       bookingId: booking['id'] as int? ?? 0,
-      bookingStatus:
-          booking['status']?.toString() ?? '',
+      bookingStatus: booking['status']?.toString() ?? '',
 
-      customerName:
-          customer['name']?.toString() ??
-              'Unknown customer',
+      customerName: customer['name']?.toString() ?? 'Unknown customer',
 
-      customerEmail:
-          customer['email']?.toString() ?? '',
+      customerEmail: customer['email']?.toString() ?? '',
 
-      serviceName:
-          service['booked_name']?.toString() ??
-              'Unknown service',
+      serviceName: service['booked_name']?.toString() ?? 'Unknown service',
 
-      servicePrice: double.tryParse(
-            service['booked_price'].toString(),
-          ) ??
-          0,
+      servicePrice: double.tryParse(service['booked_price'].toString()) ?? 0,
 
-      scheduledAt: DateTime.parse(
-        booking['scheduled_at'].toString(),
-      ).toLocal(),
+      scheduledAt: DateTime.parse(booking['scheduled_at'].toString()).toLocal(),
 
       phone: booking['phone']?.toString() ?? '',
       address: booking['address']?.toString() ?? '',
-      customerNote:
-          booking['customer_note']?.toString(),
+      customerNote: booking['customer_note']?.toString(),
 
       adminNote: json['admin_note']?.toString(),
-      staffResponseNote:
-          json['staff_response_note']?.toString(),
+      staffResponseNote: json['staff_response_note']?.toString(),
 
       assignedAt: json['assigned_at'] != null
-          ? DateTime.parse(
-              json['assigned_at'].toString(),
-            ).toLocal()
+          ? DateTime.parse(json['assigned_at'].toString()).toLocal()
           : null,
 
       respondedAt: json['responded_at'] != null
-          ? DateTime.parse(
-              json['responded_at'].toString(),
-            ).toLocal()
+          ? DateTime.parse(json['responded_at'].toString()).toLocal()
+          : null,
+
+      checkedInAt: checkIn['verified_at'] != null
+          ? DateTime.parse(checkIn['verified_at'].toString()).toLocal()
           : null,
     );
   }
