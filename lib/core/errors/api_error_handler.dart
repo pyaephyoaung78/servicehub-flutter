@@ -9,15 +9,18 @@ class ApiErrorHandler {
         final errors = data['errors'];
 
         if (errors is Map && errors.isNotEmpty) {
-          final first = errors.values.first;
+          final firstError = errors.values.first;
 
-          if (first is List && first.isNotEmpty) {
-            return first.first.toString();
+          if (firstError is List &&
+              firstError.isNotEmpty) {
+            return firstError.first.toString();
           }
         }
 
-        if (data['message'] != null) {
-          return data['message'].toString();
+        final message = data['message'];
+
+        if (message != null) {
+          return message.toString();
         }
       }
 

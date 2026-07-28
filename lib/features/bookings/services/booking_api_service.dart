@@ -4,9 +4,7 @@ import '../models/booking_model.dart';
 class BookingApiService {
   final ApiClient apiClient;
 
-  BookingApiService({
-    required this.apiClient,
-  });
+  BookingApiService({required this.apiClient});
 
   Future<BookingModel> createBooking({
     required int serviceId,
@@ -36,24 +34,46 @@ class BookingApiService {
   }
 
   Future<List<BookingModel>> getBookings() async {
-    final response = await apiClient.dio.get(
-      '/customer/bookings',
-    );
+    final response = await apiClient.dio.get('/customer/bookings');
 
     final List items = response.data['data']['data'];
 
     return items
-        .map(
-          (item) => BookingModel.fromJson(
-            item as Map<String, dynamic>,
-          ),
-        )
+        .map((item) => BookingModel.fromJson(item as Map<String, dynamic>))
         .toList();
   }
 
   Future<BookingModel> getBooking(int bookingId) async {
-    final response = await apiClient.dio.get(
-      '/customer/bookings/$bookingId',
+    final response = await apiClient.dio.get('/customer/bookings/$bookingId');
+
+    final bookingJson =
+        response.data['data']['booking'] as Map<String, dynamic>;
+
+    return BookingModel.fromJson(bookingJson);
+  }
+
+  Future<BookingModel> cancelBooking({
+    required int bookingId,
+    String? reason,
+  }) async {
+    final response = await apiClient.dio.patch(
+      '/customer/bookings/$bookingId/cancel',
+      data: {'reason': reason?.trim().isEmpty == true ? null : reason?.trim()},
+    );
+
+    final bookingJson =
+        response.data['data']['booking'] as Map<String, dynamic>;
+
+    return BookingModel.fromJson(bookingJson);
+  }
+
+  Future<BookingModel> rebook({
+    required int bookingId,
+    required DateTime scheduledAt,
+  }) async {
+    final response = await apiClient.dio.post(
+      '/customer/bookings/$bookingId/rebook',
+      data: {'scheduled_at': scheduledAt.toUtc().toIso8601String()},
     );
 
     final bookingJson =
