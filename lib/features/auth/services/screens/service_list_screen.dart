@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_laravel_testing/features/bookings/screens/create_booking_screen.dart';
+import 'package:flutter_laravel_testing/features/bookings/retention/services/customer_retention_api_service.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/token_storage.dart';
@@ -16,6 +17,7 @@ class ServiceListScreen extends StatefulWidget {
 
 class _ServiceListScreenState extends State<ServiceListScreen> {
   late final ServiceApiService serviceApiService;
+  late final CustomerRetentionApiService retentionApiService;
 
   bool isLoading = true;
   String? errorMessage;
@@ -24,6 +26,8 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
   List<ServiceModel> services = [];
 
   int? selectedCategoryId;
+  Set<int> favoriteServiceIds = {};
+  final Set<int> changingFavoriteIds = {};
 
   @override
   void initState() {
@@ -33,6 +37,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
     final apiClient = ApiClient(tokenStorage: tokenStorage);
 
     serviceApiService = ServiceApiService(apiClient: apiClient);
+    retentionApiService = CustomerRetentionApiService(apiClient: apiClient);
 
     loadData();
   }
@@ -44,14 +49,21 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
     });
 
     try {
-      final fetchedCategories = await serviceApiService.getCategories();
-      final fetchedServices = await serviceApiService.getServices(
-        serviceCategoryId: selectedCategoryId,
-      );
+      final results = await Future.wait([
+        serviceApiService.getCategories(),
+        serviceApiService.getServices(serviceCategoryId: selectedCategoryId),
+        retentionApiService.getFavoriteServices(),
+      ]);
+      final fetchedCategories = results[0] as List<ServiceCategoryModel>;
+      final fetchedServices = results[1] as List<ServiceModel>;
+      final favoriteServices = results[2] as List<ServiceModel>;
 
       setState(() {
         categories = fetchedCategories;
         services = fetchedServices;
+        favoriteServiceIds = favoriteServices
+            .map((service) => service.id)
+            .toSet();
       });
     } catch (e) {
       setState(() {
@@ -70,6 +82,33 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
     });
 
     await loadData();
+  }
+
+  Future<void> _toggleFavorite(ServiceModel service) async {
+    if (changingFavoriteIds.contains(service.id)) return;
+    setState(() => changingFavoriteIds.add(service.id));
+
+    try {
+      final isFavorite = await retentionApiService.toggleFavorite(service.id);
+      if (!mounted) return;
+      setState(() {
+        if (isFavorite) {
+          favoriteServiceIds.add(service.id);
+        } else {
+          favoriteServiceIds.remove(service.id);
+        }
+      });
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text('Could not update favourites: $error')),
+          );
+      }
+    } finally {
+      if (mounted) setState(() => changingFavoriteIds.remove(service.id));
+    }
   }
 
   @override
@@ -146,14 +185,51 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                                     ),
                                 ],
                               ),
-                              trailing: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    '${service.basePrice.toStringAsFixed(0)} MMK',
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        '${service.basePrice.toStringAsFixed(0)} MMK',
+                                      ),
+                                      const Icon(Icons.chevron_right, size: 18),
+                                    ],
                                   ),
-                                  const Icon(Icons.chevron_right, size: 18),
+                                  IconButton(
+                                    tooltip:
+                                        favoriteServiceIds.contains(service.id)
+                                        ? 'Remove from favourites'
+                                        : 'Save to favourites',
+                                    onPressed:
+                                        changingFavoriteIds.contains(service.id)
+                                        ? null
+                                        : () => _toggleFavorite(service),
+                                    icon:
+                                        changingFavoriteIds.contains(service.id)
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : Icon(
+                                            favoriteServiceIds.contains(
+                                                  service.id,
+                                                )
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color:
+                                                favoriteServiceIds.contains(
+                                                  service.id,
+                                                )
+                                                ? Colors.redAccent
+                                                : null,
+                                          ),
+                                  ),
                                 ],
                               ),
                               onTap: () async {

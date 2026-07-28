@@ -1,4 +1,5 @@
 import 'booking_timeline_event_model.dart';
+import '../retention/models/booking_review_model.dart';
 
 class BookingModel {
   final int id;
@@ -19,6 +20,7 @@ class BookingModel {
   final DateTime? checkInCodeExpiresAt;
   final DateTime? checkedInAt;
   final List<BookingTimelineEventModel> timeline;
+  final BookingReviewModel? review;
 
   const BookingModel({
     required this.id,
@@ -39,6 +41,7 @@ class BookingModel {
     required this.checkInCodeExpiresAt,
     required this.checkedInAt,
     required this.timeline,
+    required this.review,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
@@ -91,6 +94,9 @@ class BookingModel {
             ),
           )
           .toList(),
+      review: json['review'] != null
+          ? BookingReviewModel.fromJson(json['review'] as Map<String, dynamic>)
+          : null,
     );
   }
 }

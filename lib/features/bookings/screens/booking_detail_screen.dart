@@ -7,6 +7,7 @@ import '../models/booking_model.dart';
 import '../models/booking_timeline_event_model.dart';
 import '../services/booking_api_service.dart';
 import '../interactions/screens/booking_interaction_screen.dart';
+import '../retention/screens/leave_booking_review_screen.dart';
 
 class BookingDetailScreen extends StatefulWidget {
   final int bookingId;
@@ -116,6 +117,84 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     }
   }
 
+  Future<void> _leaveReview() async {
+    final currentBooking = booking;
+    if (currentBooking == null) return;
+
+    final submitted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => LeaveBookingReviewScreen(
+          bookingId: currentBooking.id,
+          serviceName: currentBooking.serviceName,
+        ),
+      ),
+    );
+
+    if (submitted == true) {
+      await _loadBooking();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Thanks! Your review is waiting for moderation.'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _bookAgain() async {
+    if (isSubmitting) return;
+
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 1)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (!mounted || date == null) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 9, minute: 0),
+    );
+    if (!mounted || time == null) return;
+
+    final scheduledAt = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+    if (!scheduledAt.isAfter(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please choose a future date and time.')),
+      );
+      return;
+    }
+
+    setState(() => isSubmitting = true);
+    try {
+      await bookingApiService.rebook(
+        bookingId: widget.bookingId,
+        scheduledAt: scheduledAt,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(ApiErrorHandler.message(error))),
+          );
+      }
+    } finally {
+      if (mounted) setState(() => isSubmitting = false);
+    }
+  }
+
   String _formatDateTime(DateTime dateTime) {
     final hour = dateTime.hour.toString().padLeft(2, '0');
     final minute = dateTime.minute.toString().padLeft(2, '0');
@@ -173,6 +252,37 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
               if (currentBooking.customerNote != null)
                 _DetailRow(label: 'Note', value: currentBooking.customerNote!),
+
+              if (currentBooking.status == 'completed') ...[
+                const SizedBox(height: 4),
+                if (currentBooking.review == null)
+                  FilledButton.icon(
+                    onPressed: isSubmitting ? null : _leaveReview,
+                    icon: const Icon(Icons.rate_review_outlined),
+                    label: const Text('Rate this service'),
+                  )
+                else
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.star_rounded,
+                        color: Colors.amber,
+                      ),
+                      title: Text(
+                        'Your ${currentBooking.review!.rating}-star review',
+                      ),
+                      subtitle: Text(
+                        'Status: ${currentBooking.review!.status.toUpperCase()}',
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: isSubmitting ? null : _bookAgain,
+                  icon: const Icon(Icons.replay_outlined),
+                  label: const Text('Book this service again'),
+                ),
+              ],
 
               OutlinedButton.icon(
                 onPressed: () => Navigator.of(context).push(

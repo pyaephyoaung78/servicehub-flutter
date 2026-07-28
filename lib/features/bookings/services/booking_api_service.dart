@@ -66,4 +66,19 @@ class BookingApiService {
 
     return BookingModel.fromJson(bookingJson);
   }
+
+  Future<BookingModel> rebook({
+    required int bookingId,
+    required DateTime scheduledAt,
+  }) async {
+    final response = await apiClient.dio.post(
+      '/customer/bookings/$bookingId/rebook',
+      data: {'scheduled_at': scheduledAt.toUtc().toIso8601String()},
+    );
+
+    final bookingJson =
+        response.data['data']['booking'] as Map<String, dynamic>;
+
+    return BookingModel.fromJson(bookingJson);
+  }
 }
