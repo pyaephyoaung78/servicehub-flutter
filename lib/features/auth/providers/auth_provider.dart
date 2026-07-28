@@ -5,20 +5,13 @@ import '../../../core/storage/token_storage.dart';
 import '../models/auth_user.dart';
 import '../services/auth_service.dart';
 
-enum AuthStatus {
-  checking,
-  authenticated,
-  unauthenticated,
-}
+enum AuthStatus { checking, authenticated, unauthenticated }
 
 class AuthProvider extends ChangeNotifier {
   final AuthService authService;
   final TokenStorage tokenStorage;
 
-  AuthProvider({
-    required this.authService,
-    required this.tokenStorage,
-  });
+  AuthProvider({required this.authService, required this.tokenStorage});
 
   AuthStatus _status = AuthStatus.checking;
   AuthUser? _user;
@@ -55,17 +48,11 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> login({required String email, required String password}) async {
     _startSubmitting();
 
     try {
-      _user = await authService.login(
-        email: email,
-        password: password,
-      );
+      _user = await authService.login(email: email, password: password);
 
       _status = AuthStatus.authenticated;
       return true;
@@ -81,6 +68,7 @@ class AuthProvider extends ChangeNotifier {
     required String name,
     required String email,
     required String password,
+    String? referralCode,
   }) async {
     _startSubmitting();
 
@@ -89,6 +77,7 @@ class AuthProvider extends ChangeNotifier {
         name: name,
         email: email,
         password: password,
+        referralCode: referralCode,
       );
 
       _status = AuthStatus.authenticated;
@@ -105,9 +94,7 @@ class AuthProvider extends ChangeNotifier {
     _startSubmitting();
 
     try {
-      _user = await authService.loginWithGoogle(
-        role: 'customer',
-      );
+      _user = await authService.loginWithGoogle(role: 'customer');
 
       _status = AuthStatus.authenticated;
       return true;

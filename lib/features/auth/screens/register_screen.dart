@@ -17,6 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmationController = TextEditingController();
+  final _referralCodeController = TextEditingController();
 
   bool _hidePassword = true;
   bool _hideConfirmation = true;
@@ -27,6 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmationController.dispose();
+    _referralCodeController.dispose();
 
     super.dispose();
   }
@@ -44,6 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       name: _nameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
+      referralCode: _referralCodeController.text,
     );
 
     if (!mounted) {
@@ -59,9 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(
-            authProvider.errorMessage ?? 'Registration failed.',
-          ),
+          content: Text(authProvider.errorMessage ?? 'Registration failed.'),
         ),
       );
   }
@@ -71,9 +72,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create account'),
-      ),
+      appBar: AppBar(title: const Text('Create account')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -103,6 +102,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     return null;
                   },
+                ),
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: _referralCodeController,
+                  textCapitalization: TextCapitalization.characters,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: 'Referral code (optional)',
+                    helperText:
+                        'Enter a friend’s code to earn a first-service bonus.',
+                    prefixIcon: Icon(Icons.card_giftcard_outlined),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -205,16 +218,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: authProvider.isSubmitting
-                        ? null
-                        : _register,
+                    onPressed: authProvider.isSubmitting ? null : _register,
                     child: authProvider.isSubmitting
                         ? const SizedBox(
                             width: 22,
                             height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Text('Create Account'),
                   ),

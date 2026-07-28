@@ -4,6 +4,7 @@ import 'package:flutter_laravel_testing/features/admin/catalog/screens/admin_cat
 import 'package:flutter_laravel_testing/features/admin/staff/screens/admin_staff_list_screen.dart';
 import 'package:flutter_laravel_testing/features/bookings/screens/my_bookings_screen.dart';
 import 'package:flutter_laravel_testing/features/bookings/retention/screens/favorite_services_screen.dart';
+import 'package:flutter_laravel_testing/features/loyalty/screens/loyalty_screen.dart';
 import 'package:flutter_laravel_testing/features/invoices/screens/admin_invoice_list_screen.dart';
 import 'package:flutter_laravel_testing/features/invoices/screens/customer_invoice_list_screen.dart';
 import 'package:flutter_laravel_testing/features/notifications/screens/notification_list_screen.dart';
@@ -81,24 +82,6 @@ class HomeScreen extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const AdminBookingListScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.favorite_outline),
-                title: const Text('Favourite services'),
-                subtitle: const Text(
-                  'Keep services you want to book again close by.',
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const FavoriteServicesScreen(),
                     ),
                   );
                 },
@@ -211,6 +194,42 @@ class HomeScreen extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const ServiceListScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.workspace_premium_outlined),
+                title: const Text('Rewards and referrals'),
+                subtitle: const Text(
+                  'Earn points from completed services and invite friends.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const LoyaltyScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.favorite_outline),
+                title: const Text('Favourite services'),
+                subtitle: const Text(
+                  'Keep services you want to book again close by.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const FavoriteServicesScreen(),
                     ),
                   );
                 },

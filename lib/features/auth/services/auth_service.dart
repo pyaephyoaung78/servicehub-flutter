@@ -31,10 +31,17 @@ class AuthService {
     required String name,
     required String email,
     required String password,
+    String? referralCode,
   }) async {
     final response = await apiClient.dio.post(
       '/register',
-      data: {'name': name, 'email': email, 'password': password,},
+      data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        if (referralCode != null && referralCode.trim().isNotEmpty)
+          'referral_code': referralCode.trim().toUpperCase(),
+      },
     );
 
     final data = response.data['data'];
@@ -66,7 +73,8 @@ class AuthService {
     final googleSignIn = GoogleSignIn.instance;
 
     await googleSignIn.initialize(
-      serverClientId: '71990617520-3302sitr2ukcj130j3r6gbpodd7q9dq8.apps.googleusercontent.com',
+      serverClientId:
+          '71990617520-3302sitr2ukcj130j3r6gbpodd7q9dq8.apps.googleusercontent.com',
     );
 
     final googleUser = await googleSignIn.authenticate();
