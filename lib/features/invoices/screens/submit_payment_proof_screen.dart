@@ -56,10 +56,10 @@ class _SubmitPaymentProofScreenState extends State<SubmitPaymentProofScreen> {
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
     );
 
-    if (!mounted || result == null) return;
+    if (!mounted || result.isEmpty) return;
 
-    final file = result.files.single;
-    if (file.path == null) {
+    final file = result.firstOrNull;
+    if (file == null || file.path == null) {
       setState(() {
         errorMessage = 'This device did not provide a readable file path.';
       });

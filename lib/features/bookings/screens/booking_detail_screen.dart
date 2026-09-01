@@ -8,6 +8,7 @@ import '../models/booking_timeline_event_model.dart';
 import '../services/booking_api_service.dart';
 import '../interactions/screens/booking_interaction_screen.dart';
 import '../retention/screens/leave_booking_review_screen.dart';
+import '../retention/screens/service_plans_screen.dart';
 
 class BookingDetailScreen extends StatefulWidget {
   final int bookingId;
@@ -281,6 +282,21 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                   onPressed: isSubmitting ? null : _bookAgain,
                   icon: const Icon(Icons.replay_outlined),
                   label: const Text('Book this service again'),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: isSubmitting
+                      ? null
+                      : () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => ServicePlansScreen(
+                              bookingId: currentBooking.id,
+                              serviceName: currentBooking.serviceName,
+                            ),
+                          ),
+                        ),
+                  icon: const Icon(Icons.autorenew_outlined),
+                  label: const Text('Set maintenance reminder'),
                 ),
               ],
 

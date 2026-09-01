@@ -48,11 +48,12 @@ class _BookingInteractionScreenState extends State<BookingInteractionScreen> {
         api.messages(widget.bookingId),
         api.proofs(widget.bookingId),
       ]);
-      if (mounted)
+      if (mounted) {
         setState(() {
           messages = results[0] as List<BookingMessageModel>;
           proofs = results[1] as List<ServiceProofModel>;
         });
+      }
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -65,8 +66,10 @@ class _BookingInteractionScreenState extends State<BookingInteractionScreen> {
           ? null
           : ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
     );
-    if (!mounted || result == null || result.files.single.path == null) return;
-    final path = result.files.single.path!;
+
+    final path = result.firstOrNull?.path;
+    if (!mounted || path == null) return;
+
     if (proofKind != null) {
       setState(() => saving = true);
       try {
@@ -95,8 +98,9 @@ class _BookingInteractionScreenState extends State<BookingInteractionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading)
+    if (loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('Booking chat & proof')),
       body: ListView(
